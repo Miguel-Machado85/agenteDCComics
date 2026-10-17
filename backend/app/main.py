@@ -68,6 +68,7 @@ def health():
 # Todos los routers pasan por usuario_actual (401 sin token); /health queda fuera
 PROTEGIDO = [Depends(usuario_actual)]
 
-from app.routers import chat
+from app.routers import chat, documents
 
-app.include_router(chat.router, dependencies=PROTEGIDO)
+for modulo in (chat, documents):
+    app.include_router(modulo.router, dependencies=PROTEGIDO)
