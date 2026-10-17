@@ -144,7 +144,10 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
         usados = estado["relevantes"][: settings.max_chunks_prompt]
         contexto = "\n\n".join(f"[{i}] {r.contenido}" for i, r in enumerate(usados, 1))
         prompt = prompts.PROMPT_GENERACION.format(
-            marcador=prompts.MARCADOR_SIN_INFO, contexto=contexto, pregunta=estado["pregunta"]
+            marcador=prompts.MARCADOR_SIN_INFO,
+            contexto=contexto,
+            pregunta=estado["pregunta"],
+            consulta=estado.get("consulta", estado["pregunta"]),
         )
         respuesta = _texto(dep.llm.invoke(prompt))
         if prompts.MARCADOR_SIN_INFO in respuesta or not respuesta:

@@ -70,11 +70,14 @@ Rules:
 - Use only facts that appear in the context. Do not use outside knowledge and do not guess.
 - Answer in the same language as the question.
 - Be concise and cite the context numbers you used, like [1] or [2].
+- The context is in English and the question may be in another language: match them by meaning
+  (names and terms may be translated, e.g. "Detective Marciano" is "Martian Manhunter").
 - If the context does not contain the answer, reply with exactly: {marcador}
 
 Context:
 {contexto}
 
 Question: {pregunta}
+Same question as an English search query: {consulta}
 
 Answer:"""

@@ -30,6 +30,7 @@ class LLMFalso:
             self.llamadas["evaluacion"] += 1
             return '{"suficiente": ' + str(self.suficiente).lower() + "}"
         self.llamadas["generacion"] += 1
+        self.prompt_generacion = prompt
         return self.generacion
 
 
@@ -125,3 +126,10 @@ def test_intencion_invalida_se_trata_como_pregunta():
     final, busquedas, _ = correr(llm, resultados(0.9, 0.85, 0.8))
     assert final["intencion"] == "pregunta"
     assert len(busquedas) == 1
+
+
+def test_generate_recibe_la_consulta_en_ingles():
+    llm = LLMFalso(suficiente=True)
+    correr(llm, resultados(0.90, 0.85, 0.80), pregunta="poderes del Detective Marciano?")
+    assert "Superman powers" in llm.prompt_generacion   # consulta reescrita por el LLM falso
+    assert "Detective Marciano" in llm.prompt_generacion
