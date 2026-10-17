@@ -1,0 +1,27 @@
+# Desarrollo local. Por ahora solo la base de datos; backend, Ollama,
+# Keycloak y Caddy se agregan en las siguientes fases.
+#
+#   docker compose up -d db      # levantar Postgres + pgvector
+#   docker compose ps            # debe decir "healthy"
+#   docker compose down          # apagar (los datos quedan en el volumen)
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dcagent}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dcagent}
+      POSTGRES_DB: ${POSTGRES_DB:-dcagent}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"   # solo accesible desde tu maquina
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dcagent} -d ${POSTGRES_DB:-dcagent}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pgdata:
