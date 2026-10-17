@@ -1,0 +1,61 @@
+# Produccion en EC2. Se combina con compose.yml; el .env de produccion
+# (deploy/env.prod.example) define COMPOSE_FILE, asi que basta con:
+#
+#   docker compose up -d          # levanta todo, incluido el backend y Caddy
+#   docker compose ps
+#   docker compose logs -f backend
+#
+# Publico solo Caddy (80/443). Postgres, Ollama, Keycloak y el backend siguen
+# atados a 127.0.0.1 por compose.yml: no se ven desde internet.
+#
+#   https://api.${DOMAIN}   -> backend:8000   (Swagger en /docs)
+#   https://auth.${DOMAIN}  -> keycloak:8080  (login y consola de admin)
+
+services:
+  backend:
+    profiles: !reset []          # en produccion el backend siempre se levanta
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    environment:
+      # El issuer es la URL publica de Keycloak: es lo que va dentro del token
+      KEYCLOAK_ISSUER: https://auth.${DOMAIN:?Falta DOMAIN en .env}/realms/dc-comics
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      # La primera vez descarga e5-small (~470 MB) y lo precarga
+      start_period: 300s
+
+  keycloak:
+    environment:
+      # Keycloak detras de Caddy: URL publica fija y cabeceras X-Forwarded-*
+      KC_HOSTNAME: https://auth.${DOMAIN:?Falta DOMAIN en .env}
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: "true"
+
+  caddy:
+    image: caddy:2
+    depends_on:
+      backend:
+        condition: service_started
+      keycloak:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"            # HTTP/3
+    environment:
+      DOMAIN: ${DOMAIN:?Falta DOMAIN en .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data         # certificados: no borrar (limites de Let's Encrypt)
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,17 @@
+# Reverse proxy con HTTPS automatico (Let's Encrypt).
+# DOMAIN viene de compose.prod.yml, p. ej. 3-87-12-45.sslip.io; sslip.io
+# resuelve api.3-87-12-45.sslip.io a 3.87.12.45 sin configurar nada.
+
+api.{$DOMAIN} {
+	encode gzip
+	reverse_proxy backend:8000 {
+		# Una pregunta al agente puede tardar ~50 s en CPU
+		transport http {
+			read_timeout 180s
+		}
+	}
+}
+
+auth.{$DOMAIN} {
+	reverse_proxy keycloak:8080
+}
