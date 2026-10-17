@@ -1,9 +1,14 @@
-# Desarrollo local. Por ahora solo la base de datos; backend, Ollama,
-# Keycloak y Caddy se agregan en las siguientes fases.
+# Desarrollo local: Postgres + pgvector, Ollama y Keycloak. Caddy y el
+# despliegue en AWS se agregan en la fase 3.
 #
-#   docker compose up -d db      # levantar Postgres + pgvector
-#   docker compose ps            # debe decir "healthy"
-#   docker compose down          # apagar (los datos quedan en el volumen)
+#   docker compose up -d db ollama keycloak   # infraestructura (el backend corre en el host con uv)
+#   docker compose ps                         # db debe decir "healthy"
+#   docker compose --profile backend up -d --build backend   # backend en contenedor (imagen pesada)
+#   docker compose down                       # apagar (los datos quedan en los volumenes)
+#
+# NUNCA uses "docker compose down -v": borra pgdata y hay que recargar el wiki.
+# Si ya tienes Ollama instalado en Windows, no levantes el servicio ollama y
+# apunta OLLAMA_BASE_URL a http://localhost:11434.
 
 services:
   db:
@@ -23,5 +28,92 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # Un solo uso: crea la base de Keycloak en el Postgres existente. Los scripts
+  # de initdb.d no corren sobre un volumen ya creado, por eso esto es un
+  # servicio aparte e idempotente (no hace nada si la base ya existe).
+  keycloak-db-init:
+    image: pgvector/pgvector:pg16
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-dcagent}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        echo "SELECT 'CREATE DATABASE ${KEYCLOAK_DB:-keycloak}' WHERE NOT EXISTS
+        (SELECT FROM pg_database WHERE datname = '${KEYCLOAK_DB:-keycloak}')\gexec"
+        | psql -h db -U ${POSTGRES_USER:-dcagent} -d ${POSTGRES_DB:-dcagent}
+    restart: "no"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    depends_on:
+      keycloak-db-init:
+        condition: service_completed_successfully
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/${KEYCLOAK_DB:-keycloak}
+      KC_DB_USERNAME: ${POSTGRES_USER:-dcagent}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-dcagent}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    ports:
+      - "127.0.0.1:${KEYCLOAK_PORT:-8080}:8080"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Un solo uso: descarga el modelo del LLM al volumen de Ollama.
+  ollama-pull:
+    image: ollama/ollama
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["ollama", "pull", "${LLM_MODEL:-qwen2.5:3b}"]
+    restart: "no"
+
+  # Opcional: el backend en contenedor. En desarrollo se corre en el host con
+  # uv (mas rapido), por eso queda bajo un perfil.
+  backend:
+    profiles: ["backend"]
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dcagent}:${POSTGRES_PASSWORD:-dcagent}@db:5432/${POSTGRES_DB:-dcagent}
+      OLLAMA_BASE_URL: http://ollama:11434
+      # El issuer es lo que ve el navegador; el JWKS se pide por la red interna
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:-http://localhost:8080/realms/dc-comics}
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/dc-comics/protocol/openid-connect/certs
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE:-dc-api}
+      LLM_MODEL: ${LLM_MODEL:-qwen2.5:3b}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      HF_HOME: /cache/huggingface
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - hfcache:/cache/huggingface
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  ollama:
+  hfcache:

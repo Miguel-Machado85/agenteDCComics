@@ -32,3 +32,19 @@ CREATE INDEX IF NOT EXISTS chunks_document_id_idx ON chunks (document_id);
 -- Indice aproximado para busqueda por similitud coseno
 CREATE INDEX IF NOT EXISTS chunks_embedding_hnsw_idx
     ON chunks USING hnsw (embedding vector_cosine_ops);
+
+-- Historial de chat por usuario (GET /history). user_sub es el "sub" del token
+CREATE TABLE IF NOT EXISTS chat_history (
+    id          BIGSERIAL PRIMARY KEY,
+    user_sub    TEXT        NOT NULL,
+    username    TEXT,
+    question    TEXT        NOT NULL,
+    answer      TEXT        NOT NULL,
+    rejected    BOOLEAN     NOT NULL DEFAULT false,
+    intent      TEXT,                              -- pregunta | saludo | ambigua
+    sources     JSONB       NOT NULL DEFAULT '[]',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS chat_history_user_idx
+    ON chat_history (user_sub, created_at DESC);

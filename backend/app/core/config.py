@@ -25,5 +25,42 @@ class Settings(BaseSettings):
     chunk_size: int = 900
     chunk_overlap: int = 150
 
+    # --- Keycloak ---
+    # El issuer es lo que ve el navegador (va dentro del token); la URL del JWKS
+    # puede ser interna si el backend corre en Docker (http://keycloak:8080/...)
+    keycloak_issuer: str = "http://localhost:8080/realms/dc-comics"
+    keycloak_jwks_url: str = (
+        "http://localhost:8080/realms/dc-comics/protocol/openid-connect/certs"
+    )
+    keycloak_audience: str = "dc-api"
+    keycloak_client_id: str = "dc-frontend"
+
+    # --- LLM (Ollama) ---
+    ollama_base_url: str = "http://localhost:11434"
+    llm_model: str = "qwen2.5:3b"
+    llm_num_ctx: int = 8192
+
+    # --- Agente ---
+    similarity_threshold: float = 0.70
+    retrieval_top_k: int = 10
+    strong_min_chunks: int = 3
+    strong_top1: float = 0.82
+    strong_top3_avg: float = 0.78
+    max_chunks_prompt: int = 10
+    history_turns: int = 3
+    # Tambien buscar con la pregunta original (ademas de la consulta en ingles)
+    search_original_question: bool = True
+    # Generar en ingles y traducir la respuesta si la pregunta no esta en ingles
+    translate_answers: bool = True
+
+    # --- API ---
+    cors_origins: str = "http://localhost:5173"
+    max_upload_mb: int = 10
+    preload_embeddings: bool = False
+
+    @property
+    def lista_cors_origins(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
 
 settings = Settings()

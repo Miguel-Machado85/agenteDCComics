@@ -21,3 +21,12 @@ def init_db() -> None:
     """Crea la extension, las tablas y los indices si no existen."""
     with psycopg.connect(settings.database_url, autocommit=True) as conn:
         conn.execute(SCHEMA.read_text(encoding="utf-8"))
+
+
+def obtener_conexion():
+    """Dependencia de FastAPI: una conexion por request, cerrada al terminar."""
+    conn = get_connection()
+    try:
+        yield conn
+    finally:
+        conn.close()
