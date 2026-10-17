@@ -38,3 +38,12 @@ def test_rewrite_query_manda_el_alias_traducido_al_llm():
     reescritura = next(p for p in prompts_vistos if p.startswith("Rewrite"))
     assert "Martian Manhunter" in reescritura and "Detective Marciano" not in reescritura
     assert final["pregunta"] == "poderes del Detective Marciano"   # la original se conserva
+
+
+def test_parece_ingles():
+    from app.services.idioma import parece_ingles
+
+    assert parece_ingles("who is Batman?") and parece_ingles("Batman?")
+    assert not parece_ingles("¿quién es Batman?")
+    assert not parece_ingles("cuales son los poderes del Detective Marciano")
+    assert not parece_ingles("Cual es la debilidad de Zorvax")

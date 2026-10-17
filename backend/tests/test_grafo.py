@@ -17,7 +17,7 @@ class LLMFalso:
         self.intencion = intencion
         self.suficiente = suficiente
         self.generacion = generacion
-        self.llamadas = {"intencion": 0, "reescritura": 0, "evaluacion": 0, "generacion": 0}
+        self.llamadas = {"intencion": 0, "reescritura": 0, "evaluacion": 0, "generacion": 0, "traduccion": 0}
 
     def invoke(self, prompt):
         if prompt.startswith("Classify"):
@@ -29,6 +29,9 @@ class LLMFalso:
         if prompt.startswith("Decide"):
             self.llamadas["evaluacion"] += 1
             return '{"suficiente": ' + str(self.suficiente).lower() + "}"
+        if prompt.startswith("Translate"):
+            self.llamadas["traduccion"] += 1
+            return "[traducida] " + prompt.split("Text: ", 1)[1].split("\n\nSpanish translation:")[0]
         self.llamadas["generacion"] += 1
         self.prompt_generacion = prompt
         return self.generacion
@@ -125,11 +128,51 @@ def test_intencion_invalida_se_trata_como_pregunta():
     llm = LLMFalso(intencion="otra-cosa", suficiente=True)
     final, busquedas, _ = correr(llm, resultados(0.9, 0.85, 0.8))
     assert final["intencion"] == "pregunta"
-    assert len(busquedas) == 1
+    assert len(busquedas) == 2   # consulta reescrita + pregunta original
 
 
 def test_generate_recibe_la_consulta_en_ingles():
     llm = LLMFalso(suficiente=True)
     correr(llm, resultados(0.90, 0.85, 0.80), pregunta="poderes del Detective Marciano?")
-    assert "Superman powers" in llm.prompt_generacion   # consulta reescrita por el LLM falso
-    assert "Detective Marciano" in llm.prompt_generacion
+    assert "Question: Superman powers" in llm.prompt_generacion   # consulta reescrita
+    assert "Detective Marciano" not in llm.prompt_generacion
+
+
+def test_pregunta_en_espanol_traduce_la_respuesta():
+    llm = LLMFalso(suficiente=True)
+    final, _, _ = correr(llm, resultados(0.90, 0.85, 0.80), pregunta="¿quién es Superman?")
+    assert llm.llamadas["traduccion"] == 1
+    assert final["respuesta"] == "[traducida] " + llm.generacion
+
+
+def test_pregunta_en_ingles_no_traduce():
+    llm = LLMFalso(suficiente=True)
+    final, _, _ = correr(llm, resultados(0.90, 0.85, 0.80), pregunta="who is Superman?")
+    assert llm.llamadas["traduccion"] == 0
+    assert final["respuesta"] == llm.generacion
+
+
+def test_rechazo_por_marcador_no_gasta_traduccion():
+    llm = LLMFalso(suficiente=True, generacion=prompts.MARCADOR_SIN_INFO)
+    final, _, _ = correr(llm, resultados(0.90, 0.85, 0.80), pregunta="¿quién es Superman?")
+    assert final["rechazada"] is True and llm.llamadas["traduccion"] == 0
+
+
+def test_busqueda_une_consulta_y_pregunta_original_con_la_mejor_similitud():
+    llamadas = []
+    por_consulta = {
+        "Superman powers": resultados(0.80, 0.75),             # ids 1 y 2
+        "poderes de Superman": resultados(0.88)[:1] + [        # el id 1 mejora; el 3 es nuevo
+            Resultado(0.78, "Otra", None, None, "Otra - X\ntexto", 3)],
+    }
+
+    def buscar(consulta, k):
+        llamadas.append(consulta)
+        return por_consulta[consulta]
+
+    llm = LLMFalso(suficiente=True)
+    grafo = construir_grafo(Dependencias(llm=llm, buscar=buscar, guardar=lambda e: 1))
+    final = grafo.invoke({"pregunta": "poderes de Superman", "usuario_sub": "u", "historial": []})
+    assert llamadas == ["Superman powers", "poderes de Superman"]
+    sims = [round(r.similitud, 2) for r in final["recuperados"]]
+    assert sims == [0.88, 0.78, 0.75]

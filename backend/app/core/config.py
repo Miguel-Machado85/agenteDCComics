@@ -48,6 +48,10 @@ class Settings(BaseSettings):
     strong_top3_avg: float = 0.78
     max_chunks_prompt: int = 6
     history_turns: int = 3
+    # Tambien buscar con la pregunta original (ademas de la consulta en ingles)
+    search_original_question: bool = True
+    # Generar en ingles y traducir la respuesta si la pregunta no esta en ingles
+    translate_answers: bool = True
 
     # --- API ---
     cors_origins: str = "http://localhost:5173"

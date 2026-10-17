@@ -25,6 +25,7 @@ from app.agent import prompts
 from app.agent.estado import EstadoAgente
 from app.core.config import settings
 from app.services.glosario import traducir_alias
+from app.services.idioma import parece_ingles
 from app.services.retrieval import Resultado
 
 log = logging.getLogger("agente")
@@ -118,7 +119,17 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
         return {"consulta": traducir_alias(consulta)}
 
     def retrieve(estado: EstadoAgente) -> dict:
-        recuperados = dep.buscar(estado["consulta"], settings.retrieval_top_k)
+        k = settings.retrieval_top_k
+        recuperados = dep.buscar(estado["consulta"], k)
+        # E5 es multilingue: buscar tambien con la pregunta original sirve de red de
+        # seguridad si la reescritura salio mal. Se une por chunk con la mejor similitud.
+        if settings.search_original_question and estado["pregunta"].lower() != estado["consulta"].lower():
+            mejores = {(r.document_id, r.contenido): r for r in recuperados}
+            for r in dep.buscar(estado["pregunta"], k):
+                clave = (r.document_id, r.contenido)
+                if clave not in mejores or r.similitud > mejores[clave].similitud:
+                    mejores[clave] = r
+            recuperados = sorted(mejores.values(), key=lambda r: r.similitud, reverse=True)[:k]
         relevantes = [r for r in recuperados if r.similitud >= settings.similarity_threshold]
         return {"recuperados": recuperados, "relevantes": relevantes}
 
@@ -131,7 +142,9 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
         contexto = "\n\n".join(
             f"[{i}] {r.contenido[:MAX_CHUNK_EVALUACION]}" for i, r in enumerate(usados, 1)
         )
-        prompt = prompts.PROMPT_EVALUACION.format(pregunta=estado["pregunta"], contexto=contexto)
+        prompt = prompts.PROMPT_EVALUACION.format(
+            pregunta=estado.get("consulta") or estado["pregunta"], contexto=contexto
+        )
         veredicto = _json(_texto(llm_json.invoke(prompt))).get("suficiente")
         model_sufficient = veredicto is True or str(veredicto).lower() == "true"
         strong = similitud_fuerte([r.similitud for r in relevantes])
@@ -144,15 +157,20 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
     def generate(estado: EstadoAgente) -> dict:
         usados = estado["relevantes"][: settings.max_chunks_prompt]
         contexto = "\n\n".join(f"[{i}] {r.contenido}" for i, r in enumerate(usados, 1))
+        # El 3B es mucho mas fiable respondiendo en ingles sobre un contexto en ingles
         prompt = prompts.PROMPT_GENERACION.format(
             marcador=prompts.MARCADOR_SIN_INFO,
             contexto=contexto,
-            pregunta=traducir_alias(estado["pregunta"]),   # el contexto usa los nombres en ingles
-            consulta=estado.get("consulta", estado["pregunta"]),
+            pregunta=estado.get("consulta") or estado["pregunta"],
         )
         respuesta = _texto(dep.llm.invoke(prompt))
         if prompts.MARCADOR_SIN_INFO in respuesta or not respuesta:
             return {"respuesta": "", "decision": "reject"}   # el contexto no alcanzo
+        if settings.translate_answers and not parece_ingles(estado["pregunta"]):
+            traducida = _texto(dep.llm.invoke(
+                prompts.PROMPT_TRADUCCION.format(texto=respuesta)
+            ))
+            respuesta = traducida or respuesta   # si falla, se entrega en ingles
         return {
             "respuesta": respuesta,
             "rechazada": False,

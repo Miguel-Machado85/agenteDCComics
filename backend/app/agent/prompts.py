@@ -68,16 +68,22 @@ PROMPT_GENERACION = """You answer questions about DC Comics using ONLY the numbe
 
 Rules:
 - Use only facts that appear in the context. Do not use outside knowledge and do not guess.
-- Answer in the same language as the question.
-- Be concise and cite the context numbers you used, like [1] or [2].
-- The context is in English and the question may be in another language: match them by meaning
-  (names and terms may be translated, e.g. "Detective Marciano" is "Martian Manhunter").
+- Answer in English, in one or two clear sentences. Do not copy the context headings.
+- Cite the context numbers you used, like [1] or [2].
 - If the context does not contain the answer, reply with exactly: {marcador}
 
 Context:
 {contexto}
 
 Question: {pregunta}
-Same question as an English search query: {consulta}
 
 Answer:"""
+
+# Segunda llamada: solo para preguntas que no estan en ingles (se asume espanol)
+PROMPT_TRADUCCION = """Translate the English text below into Spanish.
+Keep citation markers like [1] and proper names (characters, teams, places) unchanged.
+The output must be in Spanish. Output only the translation.
+
+Text: {texto}
+
+Spanish translation:"""

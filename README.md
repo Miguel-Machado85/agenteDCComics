@@ -65,7 +65,7 @@ uv run ruff check app tests
 
 - La base está en inglés y el LLM es un 3B. Los alias comunes en español se traducen en código (`app/services/glosario.py`: "Detective Marciano" → Martian Manhunter), pero las traducciones libres que el glosario no cubre (p. ej. "Huerto de Cristal" vs. *Crystal Orchard*) pueden terminar en rechazo aunque el dato exista. Se resuelve ampliando el glosario o preguntando con el nombre en inglés.
 - El grader del LLM casi siempre responde "no suficiente"; la decisión la toma sobre todo el criterio de recuperación fuerte (`STRONG_*`). Con estos umbrales, algunas preguntas fuera de dominio escritas en inglés (p. ej. "capital of France") se responden con páginas del wiki que sí mencionan el tema.
-- Las respuestas en español sobre contexto en inglés pueden salir en inglés o repetir el encabezado del fragmento.
+- Para preguntas en español el agente busca con la consulta en inglés y con la pregunta original (`SEARCH_ORIGINAL_QUESTION`), genera en inglés y traduce la respuesta con una segunda llamada al LLM (`TRANSLATE_ANSWERS`, ~10 s más). La traducción del 3B puede tener fallos menores (palabras sueltas en inglés, nombres mal traducidos). Se asume que todo idioma que no sea inglés es español.
 
 ### Backend en contenedor (opcional)
 
