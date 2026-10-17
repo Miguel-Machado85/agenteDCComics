@@ -16,8 +16,8 @@ Chunking:
    "Aquaman" encuentra la pagina "Orin (New Earth)".
 """
 
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from typing import Callable, Iterable
 
 import numpy as np
 from langchain_text_splitters import RecursiveCharacterTextSplitter
