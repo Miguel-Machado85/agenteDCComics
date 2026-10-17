@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     strong_min_chunks: int = 3
     strong_top1: float = 0.82
     strong_top3_avg: float = 0.78
-    max_chunks_prompt: int = 6
+    max_chunks_prompt: int = 10
     history_turns: int = 3
     # Tambien buscar con la pregunta original (ademas de la consulta en ingles)
     search_original_question: bool = True
