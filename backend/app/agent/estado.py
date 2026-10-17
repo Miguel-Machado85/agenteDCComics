@@ -31,6 +31,7 @@ class EstadoAgente(TypedDict, total=False):
     respuesta: str
     respuesta_cruda: str             # salida del LLM en generate, antes de procesarla
     rechazada: bool
+    reintento: bool                  # generate reintento con el prompt directo
     decision: str                    # saludo | ambigua | generate | reject
     fuentes: list[dict]
     historial_id: int

@@ -17,7 +17,8 @@ class LLMFalso:
         self.intencion = intencion
         self.suficiente = suficiente
         self.generacion = generacion
-        self.llamadas = {"intencion": 0, "reescritura": 0, "evaluacion": 0, "generacion": 0, "traduccion": 0}
+        self.respuesta_reintento = prompts.MARCADOR_SIN_INFO
+        self.llamadas = {"intencion": 0, "reescritura": 0, "evaluacion": 0, "generacion": 0, "traduccion": 0, "reintento": 0}
 
     def invoke(self, prompt):
         if prompt.startswith("Classify"):
@@ -29,6 +30,9 @@ class LLMFalso:
         if prompt.startswith("Decide"):
             self.llamadas["evaluacion"] += 1
             return '{"suficiente": ' + str(self.suficiente).lower() + "}"
+        if prompt.startswith("The numbered context"):
+            self.llamadas["reintento"] += 1
+            return self.respuesta_reintento
         if prompt.startswith("Translate"):
             self.llamadas["traduccion"] += 1
             return "[traducida] " + prompt.split("Text: ", 1)[1].split("\n\nSpanish translation:")[0]
@@ -192,3 +196,24 @@ def test_marcador_en_medio_de_una_respuesta_real_no_rechaza():
     llm = LLMFalso(suficiente=True, generacion=f"Kal-El is Superman [1]. (not {prompts.MARCADOR_SIN_INFO})")
     final, _, _ = correr(llm, resultados(0.90, 0.85, 0.80))
     assert final["rechazada"] is False
+
+
+def test_reintento_con_strong_retrieval_rescata_el_marcador():
+    llm = LLMFalso(suficiente=False, generacion=prompts.MARCADOR_SIN_INFO)
+    llm.respuesta_reintento = "Kal-El is Superman [1]."
+    final, _, _ = correr(llm, resultados(0.90, 0.85, 0.80))
+    assert llm.llamadas["reintento"] == 1
+    assert final["rechazada"] is False and final["reintento"] is True
+    assert final["respuesta"] == "Kal-El is Superman [1]."
+
+
+def test_reintento_que_tambien_devuelve_marcador_rechaza():
+    llm = LLMFalso(suficiente=False, generacion=prompts.MARCADOR_SIN_INFO)
+    final, _, _ = correr(llm, resultados(0.90, 0.85, 0.80))
+    assert llm.llamadas["reintento"] == 1 and final["rechazada"] is True
+
+
+def test_sin_strong_retrieval_no_hay_reintento():
+    llm = LLMFalso(suficiente=True, generacion=prompts.MARCADOR_SIN_INFO)
+    final, _, _ = correr(llm, resultados(0.76, 0.74))
+    assert llm.llamadas["reintento"] == 0 and final["rechazada"] is True

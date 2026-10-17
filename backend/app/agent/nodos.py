@@ -174,8 +174,21 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
             pregunta=estado.get("consulta") or estado["pregunta"],
         )
         respuesta = cruda = _texto(dep.llm.invoke(prompt))
+        reintento = False
+        if es_marcador(respuesta) and estado.get("strong_retrieval"):
+            # La busqueda fue fuerte: un solo reintento con un prompt mas directo antes de rechazar
+            reintento = True
+            respuesta = _texto(dep.llm.invoke(prompts.PROMPT_GENERACION_DIRECTA.format(
+                marcador=prompts.MARCADOR_SIN_INFO,
+                contexto=contexto,
+                pregunta=estado.get("consulta") or estado["pregunta"],
+            )))
+            cruda = f"{cruda} || reintento: {respuesta}"
+            log.info("generate: marcador con strong_retrieval, reintento -> %s",
+                     "rechazo" if es_marcador(respuesta) else "respuesta")
         if es_marcador(respuesta):
-            return {"respuesta": "", "respuesta_cruda": respuesta, "decision": "reject"}
+            return {"respuesta": "", "respuesta_cruda": cruda, "reintento": reintento,
+                    "decision": "reject"}
         if settings.translate_answers and not parece_ingles(estado["pregunta"]):
             traducida = _texto(dep.llm.invoke(
                 prompts.PROMPT_TRADUCCION.format(texto=respuesta)
@@ -184,6 +197,7 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
         return {
             "respuesta": respuesta,
             "respuesta_cruda": cruda,
+            "reintento": reintento,
             "rechazada": False,
             "decision": "generate",
             "fuentes": [_fuente(r) for r in usados],
@@ -202,7 +216,7 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
         relevantes = estado.get("relevantes", [])
         log.info(
             "pregunta=%r consulta=%r recuperados=%d sobre_umbral=%d mejor=%.3f "
-            "model_sufficient=%s strong_retrieval=%s decision=%s",
+            "model_sufficient=%s strong_retrieval=%s reintento=%s decision=%s",
             estado["pregunta"][:80],
             estado.get("consulta"),
             len(recuperados),
@@ -210,6 +224,7 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
             recuperados[0].similitud if recuperados else 0.0,
             estado.get("model_sufficient"),
             estado.get("strong_retrieval"),
+            estado.get("reintento", False),
             estado.get("decision"),
         )
         return {"historial_id": dep.guardar(estado)}

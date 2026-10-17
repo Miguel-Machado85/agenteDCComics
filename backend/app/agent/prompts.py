@@ -80,6 +80,22 @@ Question: {pregunta}
 
 Answer:"""
 
+# Reintento cuando la recuperacion fue fuerte pero el modelo devolvio el marcador:
+# mismo contexto, instruccion mas directa. El marcador sigue permitido si el
+# contexto trata de otro tema.
+PROMPT_GENERACION_DIRECTA = """The numbered context below was retrieved from the DC Comics wiki for this question. Read it carefully and answer the question with the facts it contains.
+
+- Answer in English in one or two sentences and cite the context numbers, like [1].
+- If the context only gives part of the answer, give that part.
+- Reply with exactly {marcador} only if the context is about a completely different subject than the question.
+
+Context:
+{contexto}
+
+Question: {pregunta}
+
+Answer:"""
+
 # Segunda llamada: solo para preguntas que no estan en ingles (se asume espanol)
 PROMPT_TRADUCCION = """Translate the English text below into Spanish.
 Keep citation markers like [1] and proper names (characters, teams, places) unchanged.
