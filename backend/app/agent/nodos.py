@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from app.agent import prompts
 from app.agent.estado import EstadoAgente
 from app.core.config import settings
+from app.services.glosario import traducir_alias
 from app.services.retrieval import Resultado
 
 log = logging.getLogger("agente")
@@ -110,11 +111,11 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
     def rewrite_query(estado: EstadoAgente) -> dict:
         prompt = prompts.PROMPT_REESCRITURA.format(
             historial=_formato_historial(estado.get("historial", [])),
-            pregunta=estado["pregunta"],
+            pregunta=traducir_alias(estado["pregunta"]),   # el 3B no traduce alias de forma confiable
         )
         lineas = [ln.strip(" \"'") for ln in _texto(dep.llm.invoke(prompt)).splitlines()]
         consulta = next((ln for ln in lineas if ln), "") or estado["pregunta"]
-        return {"consulta": consulta}
+        return {"consulta": traducir_alias(consulta)}
 
     def retrieve(estado: EstadoAgente) -> dict:
         recuperados = dep.buscar(estado["consulta"], settings.retrieval_top_k)
@@ -146,7 +147,7 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
         prompt = prompts.PROMPT_GENERACION.format(
             marcador=prompts.MARCADOR_SIN_INFO,
             contexto=contexto,
-            pregunta=estado["pregunta"],
+            pregunta=traducir_alias(estado["pregunta"]),   # el contexto usa los nombres en ingles
             consulta=estado.get("consulta", estado["pregunta"]),
         )
         respuesta = _texto(dep.llm.invoke(prompt))
