@@ -63,9 +63,22 @@ uv run ruff check app tests
 
 ### Limitaciones conocidas
 
-- La base está en inglés y el LLM es un 3B. Los alias comunes en español se traducen en código (`app/services/glosario.py`: "Detective Marciano" → Martian Manhunter), pero las traducciones libres que el glosario no cubre (p. ej. "Huerto de Cristal" vs. *Crystal Orchard*) pueden terminar en rechazo aunque el dato exista. Se resuelve ampliando el glosario o preguntando con el nombre en inglés.
-- El grader del LLM casi siempre responde "no suficiente"; la decisión la toma sobre todo el criterio de recuperación fuerte (`STRONG_*`). Con estos umbrales, algunas preguntas fuera de dominio escritas en inglés (p. ej. "capital of France") se responden con páginas del wiki que sí mencionan el tema.
-- Para preguntas en español el agente busca con la consulta en inglés y con la pregunta original (`SEARCH_ORIGINAL_QUESTION`), genera en inglés y traduce la respuesta con una segunda llamada al LLM (`TRANSLATE_ANSWERS`, ~10 s más). La traducción del 3B puede tener fallos menores (palabras sueltas en inglés, nombres mal traducidos). Se asume que todo idioma que no sea inglés es español.
+- La base está en inglés y el LLM es un 3B. Los alias comunes en español se traducen en código (`app/services/glosario.py`: "Detective Marciano" → Martian Manhunter). Los que no estén en el glosario dependen de que el 3B los reescriba bien; conviene ampliar el glosario cuando falle un nombre.
+- Para preguntas en español el agente busca con la consulta en inglés y con la pregunta original (`SEARCH_ORIGINAL_QUESTION`), genera en inglés y traduce la respuesta con una segunda llamada al LLM (`TRANSLATE_ANSWERS`). La traducción del 3B puede tener fallos menores ("Jocker", palabras sueltas en inglés) y a veces entrega el encabezado del fragmento en vez de redactar. Se asume que todo idioma que no sea inglés es español.
+- El evaluador (`grade_context`) casi siempre responde "no suficiente"; la decisión la toma sobre todo el criterio de recuperación fuerte (`STRONG_*`). Si el modelo devuelve el marcador `NOT_IN_CONTEXT` con recuperación fuerte, `generate` reintenta una vez.
+- Con 10 chunks en el prompt (`MAX_CHUNKS_PROMPT`) el modelo ve más contexto, pero la respuesta puede quedar fuera de los 10 primeros (p. ej. el origen del anillo de Hal Jordan está hacia el puesto 10–14).
+- Preguntas fuera de dominio sobre temas del mundo real que la base sí contiene (la página "France", "Paris, France", etc.) pueden responderse, porque la recuperación es fuerte (similitud ~0.87). Las demás (recetas, deportes, programación, otras franquicias) se rechazan por similitud o porque el modelo devuelve el marcador.
+- Con CPU, una pregunta tarda entre 15 y 50 segundos según el estado de la caché de Ollama.
+
+### Medir el agente
+
+`scripts/wiki/evaluarNombres.py` corre el banco `tests/datos/preguntas_nombres.csv`. Sin opciones mide solo reescritura + búsqueda (aciertos en el top-10). Con `--completo` corre el grafo entero sin guardar historial y reporta en qué etapa terminó cada pregunta, la respuesta cruda del LLM y el tiempo (el detalle queda en `data/evaluacion_completo_<etiqueta>.json`):
+
+```powershell
+cd backend
+uv run python .\scripts\wiki\evaluarNombres.py
+uv run python .\scripts\wiki\evaluarNombres.py --completo --etiqueta prueba
+```
 
 ### Backend en contenedor (opcional)
 
