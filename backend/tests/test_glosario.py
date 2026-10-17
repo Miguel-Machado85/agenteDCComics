@@ -14,6 +14,12 @@ def test_traduce_alias_con_tildes_y_mayusculas():
     )
 
 
+def test_alias_de_chicas_y_chicos():
+    assert traducir_alias("¿Quién es la Chica Maravilla?") == "¿Quién es la Wonder Girl?"
+    assert traducir_alias("poderes de Superchica") == "poderes de Supergirl"
+    assert traducir_alias("la Chica Halcón y el Señor Frío") == "la Hawkgirl y el Mister Freeze"
+
+
 def test_alias_mas_largo_gana():
     assert traducir_alias("Liga de la Justicia de América") == "Justice League of America"
     assert traducir_alias("la Liga de la Justicia") == "la Justice League"
