@@ -7,6 +7,6 @@ data/raw/
 data/clean/
 data/cache_categorias/
 data/seleccion_resumen.csv
-data/evaluacion_*.csv
+data/evaluacion_*
 data/cache_glosario/
 data/glosario_revision.csv
