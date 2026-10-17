@@ -1,0 +1,34 @@
+[project]
+name = "dc-agent-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.143.2",
+    "langchain>=1.4.6",
+    "langchain-ollama>=1.1.0",
+    "langchain-text-splitters>=1.1.3",
+    "langgraph>=1.2.15",
+    "pgvector>=0.5.1",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.16.0",
+    "pyjwt[crypto]>=2.15.1",
+    "python-multipart>=0.0.32",
+    "sentence-transformers>=6.1.0",
+    "torch>=2.14.1",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[dependency-groups]
+dev = [
+    "mwparserfromhell>=0.7.2",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
