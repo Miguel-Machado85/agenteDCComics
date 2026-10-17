@@ -18,6 +18,7 @@ Decisiones que conviene recordar:
 import json
 import logging
 import re
+import string
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -67,6 +68,15 @@ def _formato_historial(historial: list[dict]) -> str:
         f"User: {t['pregunta']}\nAssistant: {t['respuesta'][:MAX_RESPUESTA_HISTORIAL]}"
         for t in historial
     )
+
+
+def es_marcador(respuesta: str) -> bool:
+    """La respuesta es el marcador de "sin informacion" (sola o al inicio), o esta vacia.
+
+    Un texto que solo lo menciona en medio de una respuesta real no cuenta.
+    """
+    limpia = respuesta.strip(string.whitespace + string.punctuation).upper()
+    return not limpia or limpia.startswith(prompts.MARCADOR_SIN_INFO)
 
 
 def similitud_fuerte(similitudes: list[float]) -> bool:
@@ -164,7 +174,7 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
             pregunta=estado.get("consulta") or estado["pregunta"],
         )
         respuesta = cruda = _texto(dep.llm.invoke(prompt))
-        if prompts.MARCADOR_SIN_INFO in respuesta or not respuesta:
+        if es_marcador(respuesta):
             return {"respuesta": "", "respuesta_cruda": respuesta, "decision": "reject"}
         if settings.translate_answers and not parece_ingles(estado["pregunta"]):
             traducida = _texto(dep.llm.invoke(

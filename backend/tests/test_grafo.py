@@ -176,3 +176,19 @@ def test_busqueda_une_consulta_y_pregunta_original_con_la_mejor_similitud():
     assert llamadas == ["Superman powers", "poderes de Superman"]
     sims = [round(r.similitud, 2) for r in final["recuperados"]]
     assert sims == [0.88, 0.78, 0.75]
+
+
+def test_es_marcador_solo_si_es_o_empieza_por_el_marcador():
+    from app.agent.nodos import es_marcador
+
+    m = prompts.MARCADOR_SIN_INFO
+    assert es_marcador(m) and es_marcador(f"  {m}.\n") and es_marcador(f'"{m.lower()}"')
+    assert es_marcador(f"{m} - the context does not mention it") and es_marcador("   ")
+    assert not es_marcador(f"Superman is Kal-El. If unsure the answer would be {m}.")
+    assert not es_marcador("Batman lives in Gotham [1].")
+
+
+def test_marcador_en_medio_de_una_respuesta_real_no_rechaza():
+    llm = LLMFalso(suficiente=True, generacion=f"Kal-El is Superman [1]. (not {prompts.MARCADOR_SIN_INFO})")
+    final, _, _ = correr(llm, resultados(0.90, 0.85, 0.80))
+    assert final["rechazada"] is False

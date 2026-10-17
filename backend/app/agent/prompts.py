@@ -7,8 +7,9 @@ idioma de la pregunta. Los mensajes que el usuario ve tal cual (rechazo,
 saludo, aclaracion) son fijos y no pasan por el LLM.
 """
 
-# Marcador que el modelo debe devolver si el contexto no alcanza (se trata como rechazo)
-MARCADOR_SIN_INFO = "SIN_INFORMACION"
+# Marcador que el modelo debe devolver si el contexto no alcanza (se trata como rechazo).
+# En ingles porque el prompt de generacion esta en ingles y el 3B lo respeta mejor.
+MARCADOR_SIN_INFO = "NOT_IN_CONTEXT"
 
 # Literal del enunciado
 MENSAJE_RECHAZO = (
