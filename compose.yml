@@ -1,5 +1,5 @@
-# Desarrollo local: Postgres + pgvector, Ollama y Keycloak. Caddy y el
-# despliegue en AWS se agregan en la fase 3.
+# Desarrollo local: Postgres + pgvector, Ollama y Keycloak. El despliegue en
+# AWS (Caddy + HTTPS) se suma con compose.prod.yml: ver deploy/README.md.
 #
 #   docker compose up -d db ollama keycloak   # infraestructura (el backend corre en el host con uv)
 #   docker compose ps                         # db debe decir "healthy"
@@ -90,13 +90,19 @@ services:
     restart: "no"
 
   # Opcional: el backend en contenedor. En desarrollo se corre en el host con
-  # uv (mas rapido), por eso queda bajo un perfil.
+  # uv (mas rapido), por eso queda bajo un perfil (en produccion,
+  # compose.prod.yml lo quita).
   backend:
     profiles: ["backend"]
     build: ./backend
     depends_on:
       db:
         condition: service_healthy
+    # Dentro del contenedor config.py no encuentra el .env (lo busca en /.env),
+    # asi que compose le pasa todas sus variables: umbrales, PRELOAD_EMBEDDINGS,
+    # MAX_UPLOAD_MB... Las de `environment` de abajo ganan sobre estas, por eso
+    # las URLs con 127.0.0.1 del .env se reemplazan por los nombres de servicio.
+    env_file: .env
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-dcagent}:${POSTGRES_PASSWORD:-dcagent}@db:5432/${POSTGRES_DB:-dcagent}
       OLLAMA_BASE_URL: http://ollama:11434

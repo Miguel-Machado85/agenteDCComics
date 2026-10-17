@@ -85,3 +85,9 @@ uv run python .\scripts\wiki\evaluarNombres.py --completo --etiqueta prueba
 ```powershell
 docker compose --profile backend up -d --build backend
 ```
+
+El contenedor recibe todas las variables del `.env` (`env_file`); las URLs de la base, Ollama y el JWKS las reemplaza compose por los nombres de servicio.
+
+## Despliegue en AWS EC2
+
+Ver [`deploy/README.md`](deploy/README.md): Caddy con HTTPS automático sobre `sslip.io`, base de conocimiento restaurada desde un dump (sin regenerar embeddings) y scripts para el cambio de IP.
