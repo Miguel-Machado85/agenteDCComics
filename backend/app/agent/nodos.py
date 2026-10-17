@@ -163,9 +163,9 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
             contexto=contexto,
             pregunta=estado.get("consulta") or estado["pregunta"],
         )
-        respuesta = _texto(dep.llm.invoke(prompt))
+        respuesta = cruda = _texto(dep.llm.invoke(prompt))
         if prompts.MARCADOR_SIN_INFO in respuesta or not respuesta:
-            return {"respuesta": "", "decision": "reject"}   # el contexto no alcanzo
+            return {"respuesta": "", "respuesta_cruda": respuesta, "decision": "reject"}
         if settings.translate_answers and not parece_ingles(estado["pregunta"]):
             traducida = _texto(dep.llm.invoke(
                 prompts.PROMPT_TRADUCCION.format(texto=respuesta)
@@ -173,6 +173,7 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
             respuesta = traducida or respuesta   # si falla, se entrega en ingles
         return {
             "respuesta": respuesta,
+            "respuesta_cruda": cruda,
             "rechazada": False,
             "decision": "generate",
             "fuentes": [_fuente(r) for r in usados],

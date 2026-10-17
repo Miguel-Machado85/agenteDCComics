@@ -1,26 +1,43 @@
-grupo,pregunta,titulo_esperado,turno_previo
-alias_es,¿Cuáles son los poderes del Detective Marciano?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),
-alias_es,¿Quién es Hiedra Venenosa?,Pamela Isley (New Earth)|Pamela Isley (Prime Earth),
-alias_es,¿Qué es Ciudad Gótica?,Gotham City,
-alias_es,¿Dónde queda la Fortaleza de la Soledad?,Fortress of Solitude,
-alias_es,¿Quién es el Guasón?,Joker (New Earth)|Joker (Prime Earth),
-alias_es,¿Cuáles son los poderes de Cuervo?,Raven (New Earth)|Raven (Prime Earth),
-alias_es,¿Quién es la Chica Maravilla?,Cassandra Sandsmark (New Earth)|Cassandra Sandsmark (Prime Earth)|Donna Troy (New Earth)|Donna Troy (Prime Earth),
-alias_es,"¿Quién es Linterna Verde, Hal Jordan?",Hal Jordan (New Earth),
-alias_es,¿Qué es la Liga de la Justicia?,Justice League of America (New Earth)|Justice League of America (Prime Earth),
-nombre_igual,¿Qué es el Jardín de las Hespérides?,Garden of the Hesperides,
-nombre_igual,¿Cuáles son los poderes de J'onn J'onzz?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),
-nombre_igual,¿Quién es Darkseid?,Darkseid (New Earth),
-nombre_igual,¿Qué es Oa?,Oa,
-nombre_igual,¿Cómo es Apokolips?,Apokolips,
-nombre_igual,¿Qué es Kandor?,Kandor,
-nombre_igual,¿Quién es Superman?,Superman (Clark Kent),
-error_escritura,¿Quién es Jon Jonz?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),
-error_escritura,¿Quién es Darksaid?,Darkseid (New Earth),
-seguimiento,¿y sus debilidades?,Darkseid (New Earth),¿Quién es Darkseid?
-ingles,Who is Darkseid?,Darkseid (New Earth),
-ingles,What are the powers of Martian Manhunter?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),
-ingles,What is Gotham City?,Gotham City,
-ingles,Who is Poison Ivy?,Pamela Isley (New Earth)|Pamela Isley (Prime Earth),
-fuera_dominio,¿Cuál es la mejor receta de sushi?,,
-fuera_dominio,¿Cuál es la capital de Francia?,,
+grupo,pregunta,titulo_esperado,turno_previo,palabras_clave
+alias_es,¿Cuáles son los poderes del Detective Marciano?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),,
+alias_es,¿Quién es Hiedra Venenosa?,Pamela Isley (New Earth)|Pamela Isley (Prime Earth),,
+alias_es,¿Qué es Ciudad Gótica?,Gotham City,,
+alias_es,¿Dónde queda la Fortaleza de la Soledad?,Fortress of Solitude,,
+alias_es,¿Quién es el Guasón?,Joker (New Earth)|Joker (Prime Earth),,
+alias_es,¿Cuáles son los poderes de Cuervo?,Raven (New Earth)|Raven (Prime Earth),,
+alias_es,¿Quién es la Chica Maravilla?,Cassandra Sandsmark (New Earth)|Cassandra Sandsmark (Prime Earth)|Donna Troy (New Earth)|Donna Troy (Prime Earth),,
+alias_es,"¿Quién es Linterna Verde, Hal Jordan?",Hal Jordan (New Earth),,
+alias_es,¿Qué es la Liga de la Justicia?,Justice League of America (New Earth)|Justice League of America (Prime Earth),,
+nombre_igual,¿Qué es el Jardín de las Hespérides?,Garden of the Hesperides,,
+nombre_igual,¿Cuáles son los poderes de J'onn J'onzz?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),,
+nombre_igual,¿Quién es Darkseid?,Darkseid (New Earth),,
+nombre_igual,¿Qué es Oa?,Oa,,
+nombre_igual,¿Cómo es Apokolips?,Apokolips,,
+nombre_igual,¿Qué es Kandor?,Kandor,,
+nombre_igual,¿Quién es Superman?,Superman (Clark Kent),,
+error_escritura,¿Quién es Jon Jonz?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),,
+error_escritura,¿Quién es Darksaid?,Darkseid (New Earth),,
+seguimiento,¿y sus debilidades?,Darkseid (New Earth),¿Quién es Darkseid?,
+ingles,Who is Darkseid?,Darkseid (New Earth),,
+ingles,What are the powers of Martian Manhunter?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),,
+ingles,What is Gotham City?,Gotham City,,
+ingles,Who is Poison Ivy?,Pamela Isley (New Earth)|Pamela Isley (Prime Earth),,
+fuera_dominio,¿Cuál es la mejor receta de sushi?,,,
+fuera_dominio,¿Cuál es la capital de Francia?,,,
+medio,¿Por qué Batman combate el crimen en Gotham?,Bruce Wayne (New Earth)|Batman (Bruce Wayne)|Batman Family,,padres|parents|asesinato|murder
+medio,¿Cuál es la debilidad de Superman?,Superman (Clark Kent)|Kal-L (Earth-Two)|Kal-El (New Earth),,kriptonita|kryptonite
+medio,How did Hal Jordan get his Green Lantern ring?,Hal Jordan (New Earth),,Abin Sur
+medio,¿Cómo consiguió Hal Jordan su anillo de Linterna Verde?,Hal Jordan (New Earth),,Abin Sur
+medio,¿Quién mató a Jason Todd?,Jason Todd (New Earth)|Jason Todd (Prime Earth),,Joker|Guasón
+medio,¿Dónde vive Bruce Wayne?,Wayne Manor,,Wayne Manor|Mansión Wayne|Mansión
+medio,¿Quién es la esposa de Superman?,Lois Lane (New Earth)|Lois Lane (Prime Earth)|Lane Family,,Lois
+medio,¿Cuál es el origen de Wonder Woman?,Wonder Woman (Diana Prince),,arcilla|clay|Themyscira|Temiscira
+medio,¿Cuáles son las debilidades del Detective Marciano?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),,fuego|fire
+medio,Why does Darkseid want the Anti-Life Equation?,Anti-Life Equation|Anti-Living|Darkseid (New Earth),,Anti-Life
+medio,¿Cuáles son los poderes del Detective Marciano?,J'onn J'onzz (New Earth)|J'onn J'onzz (Prime Earth),,telepat|forma|shape|invisib|fuerza
+doc_subido,¿Cuál es la debilidad de Zorvax?,zorvax,,cobre|copper
+doc_subido,What is Zorvax's weakness?,zorvax,,copper|cobre
+fuera_dominio,¿Quién ganó el Mundial de fútbol de 2018?,,,
+fuera_dominio,¿Cómo se prepara una arepa?,,,
+fuera_dominio,¿Cuándo se independizó Colombia de España?,,,
+fuera_dominio,¿Cuáles son los poderes de Spider-Man?,,,
