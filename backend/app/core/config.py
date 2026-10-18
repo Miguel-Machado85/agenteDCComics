@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     strong_top1: float = 0.82
     strong_top3_avg: float = 0.78
     max_chunks_prompt: int = 10
+    # Con strong retrieval no se llama al grader del LLM (su veredicto no cambia
+    # la decision). false: siempre se llama, util para medir el grader
+    skip_grader_if_strong: bool = True
     history_turns: int = 3
     # Tambien buscar con la pregunta original (ademas de la consulta en ingles)
     search_original_question: bool = True

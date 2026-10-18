@@ -169,7 +169,7 @@ Desde tu PC (`$D` = tu `DOMAIN`):
 ```powershell
 $D = "3-87-12-45.sslip.io"
 curl.exe https://api.$D/health                       # {"status":"ok"}
-curl.exe -I https://auth.$D/realms/dc-comics          # 200
+curl.exe https://auth.$D/realms/dc-comics             # JSON del realm con URLs https://
 curl.exe -i https://api.$D/documents                  # 401 sin token
 ```
 
