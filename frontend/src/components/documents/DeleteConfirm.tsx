@@ -34,7 +34,7 @@ export default function DeleteConfirm({ documento, eliminando, error, onConfirma
         aria-describedby="borrar-descripcion"
         className="w-full max-w-md rounded-lg border border-borde bg-superficie p-5 shadow-xl"
       >
-        <h2 id="borrar-titulo" className="text-lg font-semibold">
+        <h2 id="borrar-titulo" className="text-3xl">
           ¿Eliminar este documento?
         </h2>
         <p id="borrar-descripcion" className="mt-2 text-sm text-texto-suave">
@@ -63,7 +63,7 @@ export default function DeleteConfirm({ documento, eliminando, error, onConfirma
             type="button"
             onClick={onConfirmar}
             disabled={eliminando}
-            className="rounded-md bg-peligro px-3 py-1.5 text-sm font-medium text-fondo hover:bg-peligro/80 disabled:opacity-50"
+            className="rounded-md bg-peligro px-3 py-1.5 text-sm font-semibold text-white hover:bg-peligro/85 disabled:opacity-50"
           >
             {eliminando ? 'Eliminando…' : 'Eliminar'}
           </button>

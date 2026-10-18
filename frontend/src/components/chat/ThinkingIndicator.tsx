@@ -13,9 +13,9 @@ export default function ThinkingIndicator() {
 
   return (
     <div role="status" className="flex items-center gap-2 px-1 text-sm text-texto-suave">
-      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-acento-fuerte" aria-hidden="true" />
+      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-acento" aria-hidden="true" />
       <span>
-        El agente está pensando…
+        SuperBot está revisando sus archivos…
         {/* El contador cambia cada segundo: oculto para no saturar al lector de pantalla */}
         <span aria-hidden="true"> {segundos} s</span>
         {segundos >= AVISO_CPU_S && (

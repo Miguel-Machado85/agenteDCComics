@@ -76,7 +76,7 @@ export default function DocumentsPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold">Documentos</h1>
+        <h1 className="text-5xl">Documentos</h1>
         <p className="mt-1 text-sm text-texto-suave">
           Lo que subas aquí se suma a las fuentes del agente junto con la wiki de DC.
         </p>
