@@ -35,6 +35,9 @@ services:
       # Qwen queda en RAM; por defecto Ollama lo descarga tras 5 min sin uso
       # y la siguiente pregunta paga ~10 s de recarga
       OLLAMA_KEEP_ALIVE: "24h"
+      # Una pregunta a la vez: con 2 vCPU, dos en paralelo se reparten la CPU
+      # y ninguna termina a tiempo
+      OLLAMA_NUM_PARALLEL: "1"
 
   keycloak:
     environment:

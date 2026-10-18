@@ -5,6 +5,7 @@ de la raiz del repositorio (en Docker, compose pasa las variables).
 
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # backend/app/core/config.py -> parents[3] es la raiz del repositorio
@@ -39,6 +40,13 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     llm_model: str = "qwen2.5:3b"
     llm_num_ctx: int = 8192
+    # Tope de tokens de salida: corta los bucles de repeticion del 3B
+    llm_num_predict: int = 600
+    llm_num_predict_json: int = 100
+    # Segundos maximos por llamada; al vencer, Ollama cancela y /chat da 503
+    llm_timeout_s: float = 300
+    # Hilos de CPU para Ollama (None: los decide Ollama)
+    llm_num_thread: int | None = None
 
     # --- Agente ---
     similarity_threshold: float = 0.70
@@ -60,6 +68,12 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     max_upload_mb: int = 10
     preload_embeddings: bool = False
+
+    @field_validator("llm_num_thread", mode="before")
+    @classmethod
+    def _vacio_es_none(cls, valor):
+        # LLM_NUM_THREAD= (vacio) en el .env significa "que decida Ollama"
+        return None if isinstance(valor, str) and not valor.strip() else valor
 
     @property
     def lista_cors_origins(self) -> list[str]:
