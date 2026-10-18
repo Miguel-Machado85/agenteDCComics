@@ -45,7 +45,8 @@ ID="$(kc get clients -r dc-comics -q clientId=dc-frontend --fields id --format c
 
 kc update "clients/$ID" -r dc-comics \
   -s "redirectUris=[${REDIRECTS}]" \
-  -s "webOrigins=[${ORIGENES}]"
+  -s "webOrigins=[${ORIGENES}]" \
+  -s 'attributes."post.logout.redirect.uris"=+'
 
 echo "Listo. Redirect URIs de dc-frontend:"
 kc get "clients/$ID" -r dc-comics --fields redirectUris,webOrigins

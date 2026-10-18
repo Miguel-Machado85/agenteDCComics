@@ -1,8 +1,6 @@
+import { config } from '../config'
 import { apiFetch } from './client'
 import type { EntradaHistorial, PreguntaIn, RespuestaChat } from './types'
-
-// Una pregunta tarda 15–50 s en CPU: margen amplio
-const TIMEOUT_CHAT_MS = 180_000
 
 /** POST /chat */
 export function enviarPregunta(pregunta: string, signal?: AbortSignal): Promise<RespuestaChat> {
@@ -10,7 +8,8 @@ export function enviarPregunta(pregunta: string, signal?: AbortSignal): Promise<
   return apiFetch<RespuestaChat>('/chat', {
     method: 'POST',
     body,
-    timeoutMs: TIMEOUT_CHAT_MS,
+    // En la EC2 una pregunta puede pasar de 3 min y Ollama atiende una a la vez
+    timeoutMs: config.chatTimeoutS * 1000,
     signal,
   })
 }

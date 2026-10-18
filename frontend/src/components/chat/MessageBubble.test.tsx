@@ -116,5 +116,40 @@ describe('MessageBubble', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
 
     expect(onReintentar).toHaveBeenCalledWith('e-1')
+    expect(screen.queryByRole('link', { name: 'Historial' })).not.toBeInTheDocument()
+  })
+
+  it('timeout (408): avisa que la respuesta puede aparecer en Historial', async () => {
+    render(
+      <MemoryRouter initialEntries={['/chat']}>
+        <Routes>
+          <Route
+            path="/chat"
+            element={
+              <MessageBubble
+                mensaje={{
+                  id: 'e-2',
+                  tipo: 'error',
+                  texto: 'El servidor tardó demasiado en responder y se dejó de esperar.',
+                  pregunta: 'Who created Batman?',
+                  porTimeout: true,
+                }}
+                onReintentar={vi.fn()}
+              />
+            }
+          />
+          <Route path="/historial" element={<p>Página de historial</p>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    const alerta = screen.getByRole('alert')
+    expect(alerta).toHaveTextContent('Tu pregunta pudo terminar en el servidor')
+    expect(alerta).toHaveTextContent('Revísalo antes de reintentar.')
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('link', { name: 'Historial' }))
+
+    expect(screen.getByText('Página de historial')).toBeInTheDocument()
   })
 })

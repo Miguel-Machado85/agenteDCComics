@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const AVISO_CPU_S = 20
+const AVISO_LENTO_S = 20
 
 /** Se monta solo mientras se espera la respuesta: el contador arranca en 0. */
 export default function ThinkingIndicator() {
@@ -18,8 +18,10 @@ export default function ThinkingIndicator() {
         SuperBot está revisando sus archivos…
         {/* El contador cambia cada segundo: oculto para no saturar al lector de pantalla */}
         <span aria-hidden="true"> {segundos} s</span>
-        {segundos >= AVISO_CPU_S && (
-          <span aria-hidden="true"> · Con CPU puede tardar hasta un minuto</span>
+        {segundos >= AVISO_LENTO_S && (
+          <span className="block">
+            En el servidor puede tardar varios minutos; no cierres ni recargues la página
+          </span>
         )}
       </span>
     </div>

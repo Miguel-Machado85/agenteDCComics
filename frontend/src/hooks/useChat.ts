@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { enviarPregunta, obtenerHistorial } from '../api/chat'
-import { esCancelacion, mensajeDeError } from '../api/client'
+import { ApiError, esCancelacion, mensajeDeError } from '../api/client'
 import type { EntradaHistorial, Fuente } from '../api/types'
 
 export type Mensaje =
@@ -14,7 +14,14 @@ export type Mensaje =
       intencion?: string
       fuentes: Fuente[]
     }
-  | { id: string; tipo: 'error'; texto: string; pregunta: string }
+  | {
+      id: string
+      tipo: 'error'
+      texto: string
+      pregunta: string
+      /** 408: se dejo de esperar, pero la pregunta pudo terminar en el servidor. */
+      porTimeout?: boolean
+    }
 
 const LIMITE_HISTORIAL = 10
 
@@ -115,7 +122,13 @@ export function useChat() {
       if (esCancelacion(e)) return
       setMensajes((actuales) => [
         ...actuales,
-        { id: nuevoId('e'), tipo: 'error', texto: mensajeDeError(e), pregunta: texto },
+        {
+          id: nuevoId('e'),
+          tipo: 'error',
+          texto: mensajeDeError(e),
+          pregunta: texto,
+          porTimeout: e instanceof ApiError && e.status === 408,
+        },
       ])
     }
     enviandoRef.current = false
