@@ -88,6 +88,12 @@ docker compose --profile backend up -d --build backend
 
 El contenedor recibe todas las variables del `.env` (`env_file`); las URLs de la base, Ollama y el JWKS las reemplaza compose por los nombres de servicio.
 
+## Frontend local
+
+Con el backend y Keycloak ya corriendo, la interfaz web (React + Vite) se levanta desde `frontend/` con `npm install` y `npm run dev`, y queda en <http://localhost:5173>.
+Lee las variables `VITE_*` del mismo `.env` de la raíz.
+Requisitos, variables, estructura y comandos: [`frontend/README.md`](frontend/README.md).
+
 ## Despliegue en AWS EC2
 
 Ver [`deploy/README.md`](deploy/README.md): Caddy con HTTPS automático sobre `sslip.io`, base de conocimiento restaurada desde un dump (sin regenerar embeddings) y scripts para el cambio de IP.
