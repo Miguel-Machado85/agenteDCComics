@@ -30,6 +30,12 @@ services:
       # La primera vez descarga e5-small (~470 MB) y lo precarga
       start_period: 300s
 
+  ollama:
+    environment:
+      # Qwen queda en RAM; por defecto Ollama lo descarga tras 5 min sin uso
+      # y la siguiente pregunta paga ~10 s de recarga
+      OLLAMA_KEEP_ALIVE: "24h"
+
   keycloak:
     environment:
       # Keycloak detras de Caddy: URL publica fija y cabeceras X-Forwarded-*

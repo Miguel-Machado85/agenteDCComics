@@ -74,9 +74,23 @@ def test_sin_chunks_sobre_umbral_rechaza_sin_llamar_al_grader():
     assert final["historial_id"] == 99 and len(guardados) == 1
 
 
-def test_strong_retrieval_genera_aunque_el_grader_diga_que_no():
+def test_strong_retrieval_genera_sin_llamar_al_grader():
     llm = LLMFalso(suficiente=False)
     final, _, _ = correr(llm, resultados(0.90, 0.85, 0.80))
+    assert llm.llamadas["evaluacion"] == 0
+    assert final["model_sufficient"] is None
+    assert final["strong_retrieval"] is True
+    assert final["rechazada"] is False
+    assert final["respuesta"] == llm.generacion
+
+
+def test_strong_retrieval_genera_aunque_el_grader_diga_que_no(monkeypatch):
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "skip_grader_if_strong", False)
+    llm = LLMFalso(suficiente=False)
+    final, _, _ = correr(llm, resultados(0.90, 0.85, 0.80))
+    assert llm.llamadas["evaluacion"] == 1
     assert final["model_sufficient"] is False
     assert final["strong_retrieval"] is True
     assert final["rechazada"] is False

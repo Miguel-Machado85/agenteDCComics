@@ -5,9 +5,10 @@
 api.{$DOMAIN} {
 	encode gzip
 	reverse_proxy backend:8000 {
-		# Una pregunta al agente puede tardar ~50 s en CPU
+		# Con 2 vCPU una pregunta puede pasar de 3 min (medido en la EC2);
+		# con menos Caddy corta con 504 aunque el backend termine y guarde
 		transport http {
-			read_timeout 180s
+			read_timeout 600s
 		}
 	}
 }

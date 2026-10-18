@@ -148,6 +148,12 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
         if not relevantes:
             # Nada sobre el umbral: se rechaza sin gastar una llamada al LLM
             return {"model_sufficient": None, "strong_retrieval": False, "suficiente": False}
+        strong = similitud_fuerte([r.similitud for r in relevantes])
+        if strong and settings.skip_grader_if_strong:
+            # La decision es model_sufficient OR strong: con recuperacion fuerte el
+            # veredicto del LLM no cambia nada, asi que no se paga esa llamada
+            # (~30 s en la EC2 de 2 vCPU)
+            return {"model_sufficient": None, "strong_retrieval": True, "suficiente": True}
         usados = relevantes[: settings.max_chunks_prompt]
         contexto = "\n\n".join(
             f"[{i}] {r.contenido[:MAX_CHUNK_EVALUACION]}" for i, r in enumerate(usados, 1)
@@ -157,7 +163,6 @@ def crear_nodos(dep: Dependencias) -> dict[str, Callable]:
         )
         veredicto = _json(_texto(llm_json.invoke(prompt))).get("suficiente")
         model_sufficient = veredicto is True or str(veredicto).lower() == "true"
-        strong = similitud_fuerte([r.similitud for r in relevantes])
         return {
             "model_sufficient": model_sufficient,
             "strong_retrieval": strong,
