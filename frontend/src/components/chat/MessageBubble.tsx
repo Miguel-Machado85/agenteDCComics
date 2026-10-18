@@ -44,6 +44,15 @@ export default function MessageBubble({ mensaje, onReintentar }: Props) {
             <span aria-hidden="true">✕ </span>Error del sistema
           </p>
           <p className="mt-1">{mensaje.texto}</p>
+          {mensaje.porTimeout && (
+            <p className="mt-2 text-sm">
+              Tu pregunta pudo terminar en el servidor: en unos minutos su respuesta aparecerá en{' '}
+              <Link to="/historial" className="font-semibold text-acento">
+                Historial
+              </Link>
+              . Revísalo antes de reintentar.
+            </p>
+          )}
           <button
             type="button"
             onClick={() => onReintentar(mensaje.id)}

@@ -12,7 +12,7 @@ const TIMEOUT_POR_DEFECTO_MS = 30_000
 export const MENSAJE_SIN_CONEXION =
   'No se pudo conectar con el servidor. Revisa que el backend esté encendido.'
 export const MENSAJE_TIMEOUT =
-  'El agente tardó demasiado en responder. Intenta de nuevo.'
+  'El servidor tardó demasiado en responder y se dejó de esperar.'
 const MENSAJE_CANCELADA = 'Se canceló la solicitud.'
 
 const MENSAJES_POR_CODIGO: Record<number, string> = {

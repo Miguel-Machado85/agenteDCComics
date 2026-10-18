@@ -22,8 +22,9 @@ No hay `.env` dentro de `/frontend`. `vite.config.ts` usa `envDir: '..'`: las va
 | `VITE_KEYCLOAK_URL` | `http://localhost:8080` |
 | `VITE_KEYCLOAK_REALM` | `dc-comics` |
 | `VITE_KEYCLOAK_CLIENT_ID` | `dc-frontend` |
+| `VITE_CHAT_TIMEOUT_S` (opcional) | `600` por defecto: segundos que se espera `POST /chat` |
 
-Se usa `localhost` (no `127.0.0.1`) porque el issuer del token debe coincidir con `KEYCLOAK_ISSUER` del backend (`http://localhost:8080/realms/dc-comics`). `src/config.ts` valida las cuatro al arrancar y exporta `config` (`apiUrl`, `keycloakUrl`, `keycloakRealm`, `keycloakClientId`); nunca leer `import.meta.env` en otro sitio.
+Se usa `localhost` (no `127.0.0.1`) porque el issuer del token debe coincidir con `KEYCLOAK_ISSUER` del backend (`http://localhost:8080/realms/dc-comics`). `src/config.ts` valida las cuatro obligatorias al arrancar (`VITE_CHAT_TIMEOUT_S`, si viene, debe ser un entero > 0) y exporta `config` (`apiUrl`, `keycloakUrl`, `keycloakRealm`, `keycloakClientId`, `chatTimeoutS`); nunca leer `import.meta.env` en otro sitio.
 
 El dev server corre en `localhost:5173` con `strictPort`: Keycloak (`redirectUris: http://localhost:5173/*`, `webOrigins`) y el CORS del backend (`CORS_ORIGINS`) solo aceptan ese origen.
 
@@ -74,7 +75,7 @@ ListaDocumentos  { total: number; items: DocumentoItem[] }
 - `GET /history` devuelve lo más reciente primero.
 - Los errores llegan como `{"detail": string}`, salvo el 422 de Pydantic, donde `detail` es un arreglo.
 - El token dura 5 min: siempre `updateToken` antes de cada request.
-- Una pregunta al agente tarda 15–50 s en CPU: timeout de 180 s.
+- Una pregunta al agente tarda 15–50 s en CPU local, pero en la EC2 puede pasar de 3 min y Ollama atiende una a la vez (`OLLAMA_NUM_PARALLEL=1`, Caddy `read_timeout` 600 s): timeout de `VITE_CHAT_TIMEOUT_S` (600 s por defecto). A los 20 s el indicador pide no cerrar ni recargar la página. Un 408 del chat no implica que la pregunta falló: la burbuja de error remite a Historial antes de reintentar.
 - El mensaje de rechazo es fijo y lo decide el backend (campo `rechazada`); el front no lo inventa.
 - No tocar `/backend`, `/deploy` ni `/keycloak` desde el frontend.
 - Textos de la interfaz en español.
@@ -93,6 +94,7 @@ src/
   pages/       IntroPage, ChatPage, DocumentsPage, HistoryPage, NotFoundPage
   hooks/, utils/ (formato.ts)
 public/_redirects   fallback SPA para Netlify (/* /index.html 200)
+netlify.toml        build de Netlify (base `frontend`): npm run build -> dist, Node 22, ignore si no cambió /frontend, regla SPA y headers de seguridad (sin CSP)
 ```
 
 ## Comandos (desde `/frontend`)
