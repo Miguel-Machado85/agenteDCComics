@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/* Tema: modo oscuro, azul marino casi negro con acento azul. Solo color y tipografia. */
+@theme {
+  --color-fondo: #0a0f1c;
+  --color-superficie: #111a2e;
+  --color-superficie-alta: #17223a;
+  --color-borde: #22304d;
+  --color-texto: #e6ebf5;
+  --color-texto-suave: #9aa7bf;
+  --color-acento: #3b82f6;
+  --color-acento-fuerte: #60a5fa;
+  --color-peligro: #f87171;
+  --color-aviso: #fbbf24;
+  --color-exito: #4ade80;
+
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --font-titulo: "Segoe UI Semibold", "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-titulo);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  a {
+    color: var(--color-acento-fuerte);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-acento-fuerte);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-acento) 45%, transparent);
+  }
+}
