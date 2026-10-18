@@ -52,7 +52,10 @@ const MessageInput = forwardRef<HTMLTextAreaElement, Props>(function MessageInpu
   }
 
   return (
-    <form onSubmit={alEnviar} className="rounded-lg border border-borde bg-superficie p-3">
+    <form
+      onSubmit={alEnviar}
+      className="rounded-lg border-2 border-tinta bg-superficie p-3 focus-within:border-acento"
+    >
       <label htmlFor="pregunta" className="sr-only">
         Escribe tu pregunta
       </label>
@@ -65,7 +68,7 @@ const MessageInput = forwardRef<HTMLTextAreaElement, Props>(function MessageInpu
         disabled={deshabilitado}
         maxLength={MAX_CARACTERES}
         rows={1}
-        placeholder={deshabilitado ? 'Esperando la respuesta…' : 'Escribe tu pregunta sobre DC Comics…'}
+        placeholder={deshabilitado ? 'Esperando la respuesta…' : 'Pregúntale a SuperBot sobre héroes, villanos o eventos…'}
         aria-describedby="contador-caracteres"
         className="block w-full resize-none bg-transparent text-texto placeholder:text-texto-suave focus:outline-none disabled:opacity-60"
       />
@@ -79,7 +82,7 @@ const MessageInput = forwardRef<HTMLTextAreaElement, Props>(function MessageInpu
         <button
           type="submit"
           disabled={deshabilitado || vacio}
-          className="rounded-md bg-acento-fuerte px-4 py-1.5 text-sm font-semibold text-fondo transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+          className="boton boton-primario"
         >
           Enviar
         </button>

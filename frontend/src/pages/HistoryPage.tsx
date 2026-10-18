@@ -33,7 +33,7 @@ export default function HistoryPage() {
       >
         <Link
           to="/chat"
-          className="inline-block rounded-md bg-acento px-4 py-2 text-sm font-medium text-white no-underline hover:bg-acento-fuerte"
+          className="boton boton-primario"
         >
           Ir al chat
         </Link>
@@ -64,8 +64,8 @@ export default function HistoryPage() {
   return (
     <div className="flex flex-col gap-6">
       <div ref={inicioRef} className="scroll-mt-4">
-        <h1 className="text-2xl font-semibold">Historial</h1>
-        <p className="mt-1 text-sm text-texto-suave">Tus preguntas al agente, de la más reciente a la más antigua.</p>
+        <h1 className="text-5xl">Historial</h1>
+        <p className="mt-2 text-texto-suave">Tus preguntas al agente, de la más reciente a la más antigua.</p>
       </div>
       <section aria-label="Preguntas anteriores" aria-busy={cargando} className="flex flex-col gap-4">
         {contenido}

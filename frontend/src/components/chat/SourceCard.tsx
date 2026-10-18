@@ -8,7 +8,7 @@ const FRAGMENTO_LARGO = 180
 const COLOR_NIVEL: Record<NivelSimilitud, string> = {
   fuerte: 'border-exito/40 bg-exito/10 text-exito',
   aceptable: 'border-aviso/40 bg-aviso/10 text-aviso',
-  débil: 'border-borde bg-fondo text-texto-suave',
+  débil: 'border-borde bg-superficie text-texto-suave',
 }
 
 export default function SourceCard({ fuente }: { fuente: Fuente }) {
@@ -17,7 +17,7 @@ export default function SourceCard({ fuente }: { fuente: Fuente }) {
   const largo = fuente.fragmento.length > FRAGMENTO_LARGO
 
   return (
-    <li className="rounded-md border border-borde bg-fondo/60 p-3 text-sm">
+    <li className="rounded-md border border-borde bg-superficie p-3 text-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="font-semibold break-words text-texto">{fuente.titulo}</p>

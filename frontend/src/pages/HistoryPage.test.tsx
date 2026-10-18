@@ -62,7 +62,7 @@ describe('HistoryPage', () => {
     expect(screen.getByRole('button', { name: /1 fuente/ })).toBeInTheDocument()
     expect(screen.getAllByText('Rechazada')).toHaveLength(1)
     expect(historialMock).toHaveBeenCalledWith({ limit: 20, offset: 0 }, expect.any(AbortSignal))
-    expect(document.title).toBe('Historial · Agente DC Comics')
+    expect(document.title).toBe('Historial · SuperBot · DC Comics')
     // Menos de 20: es la unica pagina
     expect(screen.queryByRole('navigation', { name: 'Paginación' })).not.toBeInTheDocument()
   })

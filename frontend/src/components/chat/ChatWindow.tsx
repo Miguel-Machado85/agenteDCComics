@@ -1,16 +1,11 @@
 import { useEffect, useRef } from 'react'
 import type { Mensaje } from '../../hooks/useChat'
+import { SuperBotCara } from '../superbot/SuperBot'
 import ErrorBanner from '../ui/ErrorBanner'
 import { Skeleton } from '../ui/Skeleton'
+import { EJEMPLOS } from './ejemplos'
 import MessageBubble from './MessageBubble'
 import ThinkingIndicator from './ThinkingIndicator'
-
-const EJEMPLOS = [
-  '¿Quién es Aquaman?',
-  '¿Quién creó a Batman?',
-  '¿Cuáles son los poderes de Wonder Woman?',
-  '¿Qué es la Liga de la Justicia?',
-]
 
 interface Props {
   mensajes: Mensaje[]
@@ -41,7 +36,7 @@ export default function ChatWindow({
   const vacio = !cargandoHistorial && mensajes.length === 0 && !enviando
 
   return (
-    <div className="min-h-24 flex-1 overflow-y-auto rounded-lg border border-borde bg-fondo p-3 sm:p-4">
+    <div className="min-h-24 flex-1 overflow-y-auto rounded-lg border border-borde bg-superficie p-3 sm:p-5">
       {errorHistorial && (
         <ErrorBanner
           className="mb-4"
@@ -64,8 +59,10 @@ export default function ChatWindow({
 
       {vacio && (
         <div className="flex h-full flex-col items-center justify-center gap-4 py-8 text-center">
-          <p className="text-texto-suave">
-            Pregunta lo que quieras sobre personajes, equipos e historia de DC Comics.
+          <SuperBotCara className="h-16 w-auto" />
+          <p className="max-w-md text-texto-suave">
+            Soy SuperBot. Pregúntame lo que quieras sobre héroes, villanos y eventos del
+            multiverso DC.
           </p>
           <ul className="flex flex-wrap justify-center gap-2">
             {EJEMPLOS.map((ejemplo) => (
@@ -73,7 +70,7 @@ export default function ChatWindow({
                 <button
                   type="button"
                   onClick={() => onEnviar(ejemplo)}
-                  className="rounded-full border border-borde bg-superficie px-4 py-2 text-sm text-texto transition-colors hover:border-acento hover:bg-superficie-alta"
+                  className="rounded-full border border-tinta/80 bg-superficie px-4 py-1.5 text-sm font-semibold text-texto transition-colors hover:border-acento hover:bg-acento hover:text-white"
                 >
                   {ejemplo}
                 </button>

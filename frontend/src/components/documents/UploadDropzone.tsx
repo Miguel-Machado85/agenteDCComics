@@ -78,7 +78,7 @@ export default function UploadDropzone({ onSubido }: Props) {
 
   return (
     <section aria-labelledby="titulo-subir" className="flex flex-col gap-3">
-      <h2 id="titulo-subir" className="text-lg font-semibold">
+      <h2 id="titulo-subir" className="text-3xl">
         Subir un documento
       </h2>
 
@@ -96,7 +96,7 @@ export default function UploadDropzone({ onSubido }: Props) {
           subiendo
             ? 'cursor-not-allowed border-borde opacity-70'
             : arrastrando
-              ? 'border-acento-fuerte bg-acento/10'
+              ? 'border-acento-fuerte bg-acento/5'
               : 'border-borde bg-superficie'
         }`}
       >
@@ -121,7 +121,7 @@ export default function UploadDropzone({ onSubido }: Props) {
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="rounded-md bg-acento px-3 py-1.5 text-sm font-medium text-white hover:bg-acento/80"
+                className="boton boton-primario ml-1"
               >
                 Elegir archivo
               </button>

@@ -5,8 +5,8 @@ SPA que consume la API FastAPI de `/backend` (agente RAG sobre DC Comics) con lo
 ## Stack
 
 - React 18 + Vite 8 + TypeScript (plantilla `react-ts` de create-vite)
-- react-router-dom (rutas `/chat`, `/documentos`, `/historial`, 404; `/` redirige a `/chat`)
-- Tailwind CSS v4 con `@tailwindcss/vite` (tokens del tema en `src/index.css`, bloque `@theme`: `bg-fondo`, `bg-superficie`, `border-borde`, `text-texto`, `text-texto-suave`, `text-acento`, `text-acento-fuerte`, `text-peligro`, `text-exito`, `text-aviso`)
+- react-router-dom (rutas `/` portada de SuperBot, `/chat`, `/documentos`, `/historial`, 404). La portada abre el chat con una pregunta de ejemplo pasando `state: { pregunta }` a `/chat`
+- Tailwind CSS v4 con `@tailwindcss/vite` (tokens del tema en `src/index.css`, bloque `@theme`: `bg-fondo`, `bg-superficie`, `border-borde`, `text-texto`, `text-texto-suave`, `text-acento`, `text-acento-fuerte`, `text-peligro`, `text-exito`, `text-aviso`, `bg-tinta`, `bg-noche`; clases propias `.boton`, `.boton-primario`, `.boton-contorno`, `.tramado`, `.corte-diagonal`)
 - keycloak-js 26 (misma versión mayor que el servidor Keycloak)
 - Sin axios: `fetch` con un wrapper propio en `src/api/client.ts`
 - Lint con oxlint (`.oxlintrc.json`), no ESLint
@@ -79,6 +79,8 @@ ListaDocumentos  { total: number; items: DocumentoItem[] }
 - No tocar `/backend`, `/deploy` ni `/keycloak` desde el frontend.
 - Textos de la interfaz en español.
 - Identidad visual solo con color y tipografía: sin logos ni personajes oficiales de DC.
+- Estilo inspirado en dc.com: tema claro, cabecera negra, azul DC `#0074e8`, `h1`/`h2` en Sofia Sans Extra Condensed en mayúsculas (Google Fonts, cargada en `index.html`), cuerpo en Sofia Sans.
+- El agente se presenta como **SuperBot**, el fan #1 de DC: personaje propio (SVG original en `components/superbot/SuperBot.tsx`) que habla en primera persona.
 
 ## Estructura
 
@@ -87,8 +89,8 @@ src/
   main.tsx, App.tsx, config.ts, index.css, vite-env.d.ts
   auth/        keycloak.ts, AuthContext.tsx
   api/         client.ts (wrapper fetch), types.ts, chat.ts, documents.ts
-  components/  layout/ (Layout, Header, NavBar), chat/, documents/, ui/
-  pages/       ChatPage, DocumentsPage, HistoryPage, NotFoundPage
+  components/  layout/ (Layout, Header, NavBar), chat/, documents/, superbot/, ui/
+  pages/       IntroPage, ChatPage, DocumentsPage, HistoryPage, NotFoundPage
   hooks/, utils/ (formato.ts)
 public/_redirects   fallback SPA para Netlify (/* /index.html 200)
 ```
