@@ -1,6 +1,41 @@
 # agenteDCComics
 
-Agente RAG sobre el universo DC Comics (FastAPI + LangGraph + Ollama + pgvector + Keycloak).
+Agente RAG sobre el universo DC Comics (FastAPI + LangGraph + Ollama + pgvector + Keycloak), con una interfaz web en React donde **SuperBot** responde preguntas citando los fragmentos de la wiki y de los documentos que suben los usuarios.
+
+## URLs públicas
+
+| Componente | URL | Dónde corre |
+| --- | --- | --- |
+| Frontend | <https://agente-dc-comics.netlify.app> | Netlify (despliegue continuo desde `main`, carpeta `frontend/`) |
+| API y Swagger | <https://api.54-91-224-121.sslip.io/docs> | AWS EC2, detrás de Caddy |
+| Keycloak | <https://auth.54-91-224-121.sslip.io> | AWS EC2, detrás de Caddy |
+
+La EC2 tiene una IP elástica (`54.91.224.121`), así que el dominio `54-91-224-121.sslip.io` no cambia al detener y encender la instancia. Para la demo hay que encenderla antes: con la instancia detenida, el frontend carga pero el login y el chat no responden.
+
+## Arquitectura
+
+```text
+Navegador ──> https://agente-dc-comics.netlify.app        (React + Vite, archivos estáticos)
+    │
+    ├──> https://auth.<DOMAIN>  ─┐
+    └──> https://api.<DOMAIN>   ─┤  Caddy (HTTPS, Let's Encrypt) en la EC2
+                                 ├─> keycloak:8080  login, registro y tokens (PKCE)
+                                 └─> backend:8000   FastAPI + grafo LangGraph
+                                       ├─> db      Postgres 16 + pgvector (documentos, chunks, historial)
+                                       └─> ollama  qwen2.5:3b
+```
+
+El navegador habla directo con la EC2: Netlify solo sirve los archivos del frontend. Por eso la URL de Netlify tiene que estar en el CORS del backend y en las redirect URIs del cliente `dc-frontend` de Keycloak (ver [Despliegue](#despliegue)).
+
+## Estructura del repositorio
+
+| Carpeta | Contenido |
+| --- | --- |
+| `backend/` | API FastAPI, agente LangGraph (`app/agent/`), ingesta y scripts del wiki |
+| `frontend/` | SPA React + Vite + Tailwind ([README](frontend/README.md)) |
+| `deploy/` | Caddy, `.env` de producción y scripts de la EC2 ([README](deploy/README.md)) |
+| `keycloak/` | Realm `dc-comics` que se importa en el primer arranque |
+| `data/` | `seed_titles.txt` (páginas del wiki); `raw/` y `clean/` no se versionan |
 
 ## Backend local
 
@@ -90,10 +125,31 @@ El contenedor recibe todas las variables del `.env` (`env_file`); las URLs de la
 
 ## Frontend local
 
-Con el backend y Keycloak ya corriendo, la interfaz web (React + Vite) se levanta desde `frontend/` con `npm install` y `npm run dev`, y queda en <http://localhost:5173>.
-Lee las variables `VITE_*` del mismo `.env` de la raíz.
+Con el backend y Keycloak ya corriendo, la interfaz web (React + Vite) se levanta desde `frontend/` y queda en <http://localhost:5173>:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Lee las variables `VITE_*` del mismo `.env` de la raíz. También puede apuntar a la EC2 en vez del backend local: basta con cambiar `VITE_API_URL` y `VITE_KEYCLOAK_URL` (ver [`frontend/README.md`](frontend/README.md#probar-contra-la-ec2)); así no hace falta levantar Ollama ni Keycloak en el PC.
+
 Requisitos, variables, estructura y comandos: [`frontend/README.md`](frontend/README.md).
 
-## Despliegue en AWS EC2
+## Despliegue
 
-Ver [`deploy/README.md`](deploy/README.md): Caddy con HTTPS automático sobre `sslip.io`, base de conocimiento restaurada desde un dump (sin regenerar embeddings) y scripts para el cambio de IP.
+| Parte | Guía | Resumen |
+| --- | --- | --- |
+| Backend (EC2) | [`deploy/README.md`](deploy/README.md) | Docker Compose + Caddy con HTTPS automático sobre `sslip.io`, base de conocimiento restaurada desde un dump (sin regenerar embeddings) |
+| Frontend (Netlify) | [`frontend/README.md`](frontend/README.md#despliegue-en-netlify) | Sitio conectado al repo, base `frontend/`, variables `VITE_*` en el panel de Netlify |
+| Unir los dos | [`deploy/README.md`](deploy/README.md#paso-5--conectar-el-frontend-netlify) | `FRONTEND_URL` y `CORS_ORIGINS` en el `.env` de la EC2 y `./deploy/keycloak-urls.sh` |
+
+Hay dos archivos de variables y no se mezclan:
+
+- `.env.example` → `.env` **de tu PC** (desarrollo local, incluye las `VITE_*` del frontend).
+- `deploy/env.prod.example` → `.env` **de la EC2** (producción; ahí van `DOMAIN`, `FRONTEND_URL` y `CORS_ORIGINS`).
+
+Las `VITE_*` de producción no van en ningún `.env`: se configuran en el panel de Netlify.
+
+Nunca subas al repo los `.env` ni la llave `.pem` de la EC2.

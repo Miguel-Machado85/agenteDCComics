@@ -18,7 +18,7 @@ backend -> db (Postgres + pgvector) · ollama (qwen2.5:3b) · keycloak (JWKS int
 | `env.prod.example` | Plantilla del `.env` de la EC2 (incluye `COMPOSE_FILE`, así `docker compose` usa los dos archivos sin `-f`) |
 | `exportar-base.ps1` | **En tu PC**: exporta documentos, chunks y embeddings a `kb.dump` |
 | `restaurar-base.sh` | **En la EC2**: restaura `kb.dump` y verifica conteos |
-| `keycloak-urls.sh` | **En la EC2**: registra las URLs públicas de Swagger (y del frontend) en el cliente `dc-frontend` |
+| `keycloak-urls.sh` | **En la EC2**: registra en el cliente `dc-frontend` las URLs públicas de Swagger y del frontend (redirect URIs, web origins y URLs de regreso al cerrar sesión) |
 | `update-ip.sh` | **En la EC2**: tras un Stop/Start con IP nueva, actualiza `DOMAIN`, reinicia y vuelve a registrar las URLs |
 
 ## ¿Hay que crear algo en Caddy o en sslip.io?
@@ -79,18 +79,21 @@ cd ..
 
    | Tipo | Puerto | Origen |
    | --- | --- | --- |
-   | SSH | 22 | My IP |
+   | SSH | 22 | IP de cada integrante, como `x.x.x.x/32` (una regla por persona) |
    | HTTP | 80 | 0.0.0.0/0 |
    | HTTPS | 443 | 0.0.0.0/0 |
 
+   Cada integrante saca su IP con `curl.exe https://checkip.amazonaws.com`. Si SSH se queda en *timeout*, casi siempre es porque la IP de esa persona cambió (otra red, o el proveedor la renovó): se actualiza su regla. No abran el 22 a `0.0.0.0/0`.
+
 3. **Billing → Budgets**: alarma mensual (p. ej. USD 10).
-4. Copia la **IP pública** de la instancia.
+4. **IP elástica** (recomendado): *EC2 → Elastic IPs → Allocate* y *Associate* a la instancia. Así el `DOMAIN` no cambia con cada Stop/Start y no hay que tocar Netlify ni Keycloak. Cobra por hora mientras exista: al entregar el proyecto, *Disassociate* y *Release*.
+5. Copia la **IP pública** (la elástica, si la asignaron). En este proyecto: `54.91.224.121` → `DOMAIN=54-91-224-121.sslip.io`.
 
 ---
 
 ## Paso 3 — En la EC2
 
-**3.1 Entrar** (PowerShell en tu PC):
+**3.1 Entrar** (PowerShell en tu PC). Guarda la llave fuera de la carpeta del repo (por ejemplo `C:\Users\<usuario>\.ssh\`) y nunca la subas a GitHub:
 
 ```powershell
 icacls .\clave.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"   # solo la primera vez
@@ -185,6 +188,41 @@ Consola de Keycloak: `https://auth.<DOMAIN>/admin` con el admin del `.env`.
 
 ---
 
+## Paso 5 — Conectar el frontend (Netlify)
+
+El navegador llama directo a `api.` y `auth.`, así que la URL de Netlify tiene que estar en el CORS del backend y en el cliente `dc-frontend` de Keycloak. Se hace una vez, después de crear el sitio (ver [`frontend/README.md`](../frontend/README.md#despliegue-en-netlify)).
+
+En la EC2, desde `~/agenteDCComics`:
+
+```bash
+git pull
+nano .env
+```
+
+Con la URL exacta de Netlify, sin `/` final, y conservando `localhost:5173` para poder desarrollar contra la EC2:
+
+```env
+FRONTEND_URL=https://agente-dc-comics.netlify.app
+CORS_ORIGINS=http://localhost:5173,https://agente-dc-comics.netlify.app
+```
+
+```bash
+docker compose up -d backend      # recrea el backend con el CORS nuevo (no reconstruye la imagen)
+./deploy/keycloak-urls.sh         # redirect URIs, web origins y post-logout de dc-frontend
+```
+
+Comprobar desde tu PC:
+
+```powershell
+$D = "54-91-224-121.sslip.io"
+curl.exe -i -X OPTIONS "https://api.$D/chat" -H "Origin: https://agente-dc-comics.netlify.app" -H "Access-Control-Request-Method: POST"
+# debe traer: access-control-allow-origin: https://agente-dc-comics.netlify.app
+```
+
+Y en el navegador, en incógnito y desde la URL de Netlify: login, registro, una pregunta, subir y borrar un documento, historial y cerrar sesión.
+
+---
+
 ## Día a día
 
 | Acción | Comando |
@@ -193,7 +231,9 @@ Consola de Keycloak: `https://auth.<DOMAIN>/admin` con el admin del `.env`.
 | Logs del agente | `docker compose logs -f backend` |
 | Desplegar código nuevo | `git pull && docker compose up -d --build backend` |
 | Apagar | Consola AWS → *Stop instance* (los contenedores vuelven solos al encender) |
-| IP nueva tras Start | `./deploy/update-ip.sh` |
+| IP nueva tras Start (solo sin IP elástica) | `./deploy/update-ip.sh`, y en Netlify actualizar `VITE_API_URL` y `VITE_KEYCLOAK_URL` y volver a desplegar |
+| Cambió la URL del frontend | `FRONTEND_URL` y `CORS_ORIGINS` en `.env`, `docker compose up -d backend` y `./deploy/keycloak-urls.sh` |
+| Antes de una demo | Encender 30 min antes y hacer una pregunta de calentamiento (Qwen queda en RAM) |
 | Modelo descargado | `docker compose exec ollama ollama list` |
 | Documentos y chunks | `docker compose exec db psql -U dcagent -d dcagent -c "SELECT source, count(*) FROM documents GROUP BY source;"` |
 
