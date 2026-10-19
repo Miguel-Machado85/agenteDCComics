@@ -10,3 +10,5 @@ data/seleccion_resumen.csv
 data/evaluacion_*
 data/cache_glosario/
 data/glosario_revision.csv
+*.pem
+.netlify/
